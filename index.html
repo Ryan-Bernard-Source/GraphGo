@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GraphGo — Data Visualization</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ===== TOP BAR ===== -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <rect x="1" y="11" width="4" height="10" rx="1" fill="#4e79a7"/>
+        <rect x="7" y="6"  width="4" height="15" rx="1" fill="#6a99c7"/>
+        <rect x="13" y="2" width="4" height="19" rx="1" fill="#4e79a7"/>
+        <polyline points="3,11 9,6 15,2" stroke="#f28e2b" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span>GraphGo</span>
+    </div>
+
+    <div class="topbar-divider"></div>
+
+    <label class="upload-btn" title="Upload a CSV file">
+      <input type="file" id="fileInput" accept=".csv" />
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Upload CSV
+    </label>
+    <button class="btn-ghost" id="loadSampleBtn">Try Sample Data</button>
+
+    <div class="topbar-divider"></div>
+
+    <!-- Show Me button -->
+    <button class="btn-ghost show-me-trigger" id="showMeBtn" title="Get chart type recommendations">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Show Me
+    </button>
+
+    <!-- Export -->
+    <button class="btn-ghost" id="exportPngBtn" title="Download chart as PNG">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export PNG
+    </button>
+
+    <div class="topbar-actions">
+      <button class="btn-ghost" id="saveConfigBtn" title="Save configuration">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save
+      </button>
+      <button class="btn-ghost" id="loadConfigBtn" title="Restore configuration">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.7L1 10"/></svg>
+        Load
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== MAIN LAYOUT ===== -->
+  <div class="app-body">
+
+    <!-- ===== LEFT SIDEBAR ===== -->
+    <aside class="sidebar">
+
+      <!-- Tab switcher -->
+      <div class="sidebar-tabs">
+        <button class="sidebar-tab active" data-tab="data">Data</button>
+        <button class="sidebar-tab" data-tab="analytics">Analytics</button>
+      </div>
+
+      <!-- DATA TAB -->
+      <div class="tab-pane active" id="tab-data">
+        <div class="field-search-wrap">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="fieldSearch" placeholder="Search fields…" />
+        </div>
+
+        <div class="field-group">
+          <div class="field-group-label">Dimensions</div>
+          <div id="dimensionsList"><div class="empty-sidebar-msg">No data loaded</div></div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-group-label">Measures</div>
+          <div id="measuresList"><div class="empty-sidebar-msg"></div></div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS TAB -->
+      <div class="tab-pane" id="tab-analytics">
+        <div class="analytics-group">
+          <div class="analytics-group-title">Reference Lines</div>
+          <label class="analytics-item">
+            <input type="checkbox" id="avgLineCheck" /> Average Line
+          </label>
+          <label class="analytics-item">
+            <input type="checkbox" id="medianLineCheck" /> Median Line
+          </label>
+          <label class="analytics-item">
+            <input type="checkbox" id="trendLineCheck" /> Trend Line (linear)
+          </label>
+        </div>
+        <div class="analytics-group">
+          <div class="analytics-group-title">Display</div>
+          <label class="analytics-item">
+            <input type="checkbox" id="showLabelsCheck" /> Show Mark Labels
+          </label>
+        </div>
+      </div>
+
+      <!-- MARKS CARD (always visible) -->
+      <div class="marks-card">
+        <div class="marks-header">Marks</div>
+
+        <div class="marks-row marks-type-row">
+          <span class="marks-icon">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="10" width="5" height="12" rx="1"/><rect x="9" y="4" width="5" height="18" rx="1"/><rect x="16" y="7" width="5" height="15" rx="1"/></svg>
+          </span>
+          <span class="marks-label">Type</span>
+          <select id="markTypeSelect">
+            <option value="bar">Bar</option>
+            <option value="line">Line</option>
+            <option value="area">Area</option>
+            <option value="scatter">Scatter</option>
+            <option value="pie">Pie</option>
+          </select>
+        </div>
+
+        <div class="marks-row">
+          <span class="marks-icon">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+          </span>
+          <span class="marks-label">Color</span>
+          <div id="colorShelf" class="marks-shelf-well">
+            <span class="shelf-empty-text" id="colorEmpty">None</span>
+          </div>
+        </div>
+
+        <div class="marks-row">
+          <span class="marks-icon">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+          </span>
+          <span class="marks-label">Sort</span>
+          <select id="sortSelect">
+            <option value="default">Default</option>
+            <option value="asc">↑ Asc</option>
+            <option value="desc">↓ Desc</option>
+          </select>
+        </div>
+
+        <div class="marks-row">
+          <span class="marks-icon">Σ</span>
+          <span class="marks-label">Aggregate</span>
+          <select id="aggregationSelect">
+            <option value="sum">SUM</option>
+            <option value="avg">AVG</option>
+            <option value="count">COUNT</option>
+            <option value="min">MIN</option>
+            <option value="max">MAX</option>
+            <option value="none">None</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">
+          Filters
+          <button id="addFilterBtn" title="Add filter">+</button>
+        </div>
+        <div id="filtersList"></div>
+      </div>
+
+    </aside><!-- /sidebar -->
+
+    <!-- ===== MAIN PANEL ===== -->
+    <main class="main-panel">
+
+      <!-- Tableau-style Columns / Rows shelves -->
+      <div class="shelves-row">
+        <div class="shelf" id="colsShelf">
+          <span class="shelf-label">Columns</span>
+          <div class="shelf-pills" id="colsPills"></div>
+          <button class="shelf-add-btn" id="colsAddBtn" title="Add field to Columns">+</button>
+        </div>
+        <div class="shelf" id="rowsShelf">
+          <span class="shelf-label">Rows</span>
+          <div class="shelf-pills" id="rowsPills"></div>
+          <button class="shelf-add-btn" id="rowsAddBtn" title="Add field to Rows">+</button>
+        </div>
+      </div>
+
+      <!-- Error banner -->
+      <div id="errorBanner" class="error-banner hidden"></div>
+
+      <!-- Chart area -->
+      <div class="chart-container" id="chartContainer">
+        <div id="chartPlaceholder" class="chart-placeholder">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+            <rect x="6"  y="30" width="12" height="28" rx="2" fill="#4e79a7" opacity=".25"/>
+            <rect x="22" y="18" width="12" height="40" rx="2" fill="#4e79a7" opacity=".25"/>
+            <rect x="38" y="24" width="12" height="34" rx="2" fill="#4e79a7" opacity=".25"/>
+            <polyline points="12,30 28,18 44,24" stroke="#f28e2b" stroke-width="2" fill="none" stroke-linecap="round" opacity=".4"/>
+          </svg>
+          <p>Select <strong>Columns</strong> (X) and <strong>Rows</strong> (Y) fields to build a chart</p>
+          <p class="sub">Or click <strong>Try Sample Data</strong> above to start instantly</p>
+        </div>
+        <canvas id="chartCanvas" class="hidden"></canvas>
+        <div id="chartTooltip" class="chart-tooltip"></div>
+      </div>
+
+      <!-- Stats row -->
+      <div id="statsRow" class="stats-row hidden"></div>
+
+      <!-- Table toolbar -->
+      <div class="table-toolbar">
+        <span id="tableInfo" class="table-info"></span>
+        <button class="btn-outline" id="toggleTableBtn">Show Data Table</button>
+      </div>
+
+      <!-- Data table -->
+      <div id="tableWrapper" class="table-wrapper hidden">
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead id="tableHead"></thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+
+    </main>
+  </div><!-- /app-body -->
+
+  <!-- ===== FLOATING ELEMENTS ===== -->
+
+  <!-- Field context menu (appears on click of a field item) -->
+  <div id="fieldCtxMenu" class="field-ctx-menu hidden">
+    <div class="ctx-item" data-action="cols">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"/><polyline points="15 6 21 12 15 18"/></svg>
+      Add to Columns (X)
+    </div>
+    <div class="ctx-item" data-action="rows">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="3" x2="12" y2="21"/><polyline points="18 15 12 21 6 15"/></svg>
+      Add to Rows (Y)
+    </div>
+    <div class="ctx-item" data-action="color">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="10"/></svg>
+      Add to Color
+    </div>
+    <div class="ctx-menu-sep"></div>
+    <div class="ctx-item" data-action="filter">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      Add to Filter
+    </div>
+  </div>
+
+  <!-- Shelf field picker (appears when clicking + on a shelf) -->
+  <div id="shelfPicker" class="shelf-picker hidden">
+    <input type="text" class="shelf-picker-search" id="shelfPickerSearch" placeholder="Search fields…" />
+    <div id="shelfPickerList" class="shelf-picker-list"></div>
+  </div>
+
+  <!-- Show Me panel -->
+  <div id="showMePanel" class="show-me-panel hidden">
+    <div class="show-me-header">
+      <span>Show Me</span>
+      <button id="showMeClose" class="show-me-close">×</button>
+    </div>
+    <div class="show-me-grid" id="showMeGrid"></div>
+    <div class="show-me-hint" id="showMeHint">Select X and Y fields for recommendations</div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
